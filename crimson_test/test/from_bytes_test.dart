@@ -6,7 +6,7 @@ part 'from_bytes_test.g.dart';
 part 'from_bytes_test.freezed.dart';
 
 @freezed
-class FBFreezed with _$FBFreezed {
+abstract class FBFreezed with _$FBFreezed {
   // ignore: invalid_annotation_target
   @json
   const factory FBFreezed({
@@ -14,7 +14,7 @@ class FBFreezed with _$FBFreezed {
     required int age,
   }) = _FBFreezed;
 
-  factory FBFreezed.fromBytes(Uint8List bytes) => _$FBFreezedFromBytes(bytes);
+  factory FBFreezed.fromBytes(Uint8List bytes) => Crimson(bytes).readFBFreezed();
 }
 
 @json

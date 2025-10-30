@@ -8,7 +8,7 @@ part 'from_json_test.freezed.dart';
 // Need to disable fromJson/toJson OR it generates:
 // FJFreezed _$FJFreezedFromJson(Map<String, dynamic> json) {...}
 @Freezed(fromJson: false, toJson: false)
-class FJFreezed with _$FJFreezed {
+abstract class FJFreezed with _$FJFreezed {
   // ignore: invalid_annotation_target
   @json
   const factory FJFreezed({
@@ -19,7 +19,7 @@ class FJFreezed with _$FJFreezed {
   // and would THEN throw this error
   // The name '_$FJFreezedFromJson' is already defined.
   // Try renaming one of the declarations.
-  factory FJFreezed.fromJson(Uint8List json) => _$FJFreezedFromJson(json);
+  factory FJFreezed.fromJson(Uint8List json) => Crimson(json).readFJFreezed();
 }
 
 @json

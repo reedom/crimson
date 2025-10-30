@@ -16,10 +16,24 @@ const TypeChecker _convertChecker = TypeChecker.fromRuntime(JsonConvert);
 extension ClassElementX on ClassElement {
   String get cleanName {
     // hack to fix freezed names
+    // For freezed v2: _$_TestObjectImpl -> TestObject
     if (displayName.startsWith(r'_$') && displayName.endsWith('Impl')) {
       return displayName
           .substring(0, name.length - 4) // remove Impl
           .replaceFirst(r'_$', ''); // remove _$
+    }
+
+    // For freezed v3: _TestObject -> TestObject
+    // Check if this is a freezed v3 implementation class by checking if it has a public interface
+    if (displayName.startsWith('_') && !displayName.startsWith(r'_$')) {
+      // Check if there's a corresponding public interface (same name without underscore)
+      final publicName = displayName.substring(1);
+      // Check if the class implements an interface with this public name
+      for (final interface in interfaces) {
+        if (interface.element.displayName == publicName) {
+          return publicName;
+        }
+      }
     }
 
     return displayName;
@@ -28,10 +42,10 @@ extension ClassElementX on ClassElement {
   List<PropertyInducingElement> get allAccessors {
     final accessorNames = <String>{};
     return [
-      ...accessors.map((e) => e.variable),
+      ...accessors.map((e) => e.variable2).whereType<PropertyInducingElement>(),
       for (final supertype in allSupertypes) ...[
         if (!supertype.isDartCoreObject)
-          ...supertype.accessors.map((e) => e.variable),
+          ...supertype.accessors.map((e) => e.variable2).whereType<PropertyInducingElement>(),
       ],
     ]
         .where(
@@ -128,9 +142,9 @@ extension PropertyInducingElementX on PropertyInducingElement {
       return annName;
     }
 
-    final separator = _jsonKebabChecker.hasAnnotationOf(enclosingElement!)
+    final separator = _jsonKebabChecker.hasAnnotationOf(enclosingElement3!)
         ? '-'
-        : _jsonSnakeChecker.hasAnnotationOf(enclosingElement!)
+        : _jsonSnakeChecker.hasAnnotationOf(enclosingElement3!)
             ? '_'
             : null;
     if (separator != null) {
@@ -178,15 +192,15 @@ extension ExecutableElementX on ExecutableElement {
     }
 
     if (this is MethodElement) {
-      return '${enclosingElement.name}.$name';
+      return '${enclosingElement3.name}.$name';
     }
 
     if (this is ConstructorElement) {
       // Ignore the default constructor.
       if (name.isEmpty) {
-        return '${enclosingElement.name}';
+        return '${enclosingElement3.name}';
       }
-      return '${enclosingElement.name}.$name';
+      return '${enclosingElement3.name}.$name';
     }
 
     throw UnsupportedError(
